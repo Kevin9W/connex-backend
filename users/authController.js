@@ -2,7 +2,7 @@ let model=require('./model')
 let validate=require('../validation/register')
 let bcrypt=require('bcryptjs')
 let jwt=require('jsonwebtoken')
-
+//---Registration---
 let register = (request,response)=>{
   let {errors,notValid}=validate(request.body)
   if (notValid){
@@ -18,11 +18,9 @@ let register = (request,response)=>{
     if (foundUser){
       let foundError = {status: 400, errors:[]}
       if (foundUser.user_login===request.body.user_login){
-        console.log(foundUser.user_login)
         foundError.errors.push({message:"Username is already taken."})
       }
       if (foundUser.email===request.body.email) {
-        console.log(foundUser.email)
         foundError.errors.push({message:"Email is already registered."})
       }
       return response.status(400).json(foundError)
@@ -61,28 +59,64 @@ let register = (request,response)=>{
     })
   })
 }
-
+//---Login---
 let login=(request,response)=>{
   if (!request.body.user_login || !request.body.password) {
-    response.status(400).json({ status: 400, message: "Please enter your username and password" });
+    return response.status(400).json({ status: 400, message: "Please enter your username and password" });
   }
   let loginInfo = [request.body.user_login]
   model.getLogin(loginInfo,(error,foundUser)=>{
     if (error){
-      response.status(500).json({
+      return response.status(500).json({
         status: 500,
         message: "Something went wrong. Please try again."
       });
     }
     if (!foundUser){
-      response.status(400).json({
+      return response.status(400).json({
         status: 400,
         message: "Username or Password was incorrect."
+      })
     }
-
+    bcrypt.compare(request.body.password, foundUser.pass_hash, (error,isMatch)=>{
+      if (error) {
+        return response.status(500).json({
+          status: 500,
+          message: "Something went wrong. Please try again."
+        });
+      }
+      if (isMatch) {
+        let user = {
+          username: foundUser.user_login
+        }
+        jwt.sign(
+          //payload
+          user,
+          //secret
+          "waffles",
+          //registered/public claims
+          {
+            expiresIn: "12h"
+          },
+          (err, signedJwt) => {
+            return response.status(200).json({
+              status: 200,
+              message: "Successfully logged in",
+              username: foundUser.user_login,
+              signedJwt
+            })
+          }
+        )
+      }
+      else{
+        return response.status(400).json({
+          status: 400,
+          message: "Username or Password was incorrect."
+        })
+      }
+    })
   })
 }
-
 
 module.exports={
   register,

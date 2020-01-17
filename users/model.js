@@ -30,5 +30,5 @@ function newReg(info,callback){
 }
 
 module.exports={
-	getAll,getOneReg,newReg
+	getAll,getOneReg,newReg,getLogin
 }
