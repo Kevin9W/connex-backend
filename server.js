@@ -18,6 +18,8 @@ app.get('/api', (request, response)=>{
 })
 
 app.post('/register',users.auth.register)
+app.post('/login', users.auth.login)
+
 
 app.listen(PORT,()=>{
 	console.log(`App listening on Port:${PORT} \nAccess at http://localhost:${PORT}`)
