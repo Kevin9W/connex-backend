@@ -3,13 +3,13 @@ let validate=require('../validation/register')
 let bcrypt=require('bcryptjs')
 let jwt=require('jsonwebtoken')
 //---Registration---
-let register = (request,response)=>{
+function register(request,response){
   let {errors,notValid}=validate(request.body)
   if (notValid){
     return response.status(500).json({status:500, message:'Something went wrong. Please try again.',errors})
   }
   let newUser=[request.body.user_login,request.body.email]
-  model.getOneReg(newUser,(error,foundUser)=>{
+  model.getOneLogin_Email(newUser,(error,foundUser)=>{
     if(error){
       return response.status(500).json({
         status: 500, message:'Something went wrong. Please try again.'
@@ -60,7 +60,7 @@ let register = (request,response)=>{
   })
 }
 //---Login---
-let login=(request,response)=>{
+function login(request,response){
   if (!request.body.user_login || !request.body.password) {
     return response.status(400).json({ status: 400, message: "Please enter your username and password" });
   }
@@ -86,15 +86,17 @@ let login=(request,response)=>{
         });
       }
       if (isMatch) {
+        model.updateLoginDate([foundUser.user_login],error=>{
+          if (error) {
+            console.log(error)
+          }
+        })
         let user = {
           username: foundUser.user_login
         }
         jwt.sign(
-          //payload
           user,
-          //secret
-          "waffles",
-          //registered/public claims
+          "Bawooga Whales",
           {
             expiresIn: "12h"
           },
@@ -117,8 +119,9 @@ let login=(request,response)=>{
     })
   })
 }
+//---Forgot Password---
 
 module.exports={
   register,
-  login
+  login,
 }
