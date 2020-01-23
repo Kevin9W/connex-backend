@@ -9,18 +9,34 @@ function getMatch(request, response){
     });
   }
   else {
-    model.getMatchUsers(info, (error, data) => {
+    model.getMatchUsers(info, (error, userData) => {
       if (error) {
         return response.status(500).json({
           status: 500, message: 'Something went wrong. Please try again.'
         })
       }
-      else {
-        return response.status(200).json({
-          status: 200,
-          message: "Success!",
-          data: data,
-        });
+      let i=0
+      for (let user of userData){
+        model.getUserTags(user.user_login,(error,tagsData)=>{
+          if (error) {
+            return response.status(500).json({
+              status: 500, message: 'Something went wrong. Please try again.'
+            })
+          }
+          user.tags=[]
+          for (let tag of tagsData){
+            user.tags.push(tag.tags)
+
+          }
+          i++
+          if (i===userData.length){
+            return response.status(200).json({
+              status: 200,
+              message: "Success!",
+              data: userData,
+            });
+          }
+        })
       }
     })
   }

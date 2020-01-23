@@ -33,7 +33,7 @@ function getUserTags(name, callback) {
 }
 function getMatchUsers(info, callback){
 	let getMatchUsersQuery=`
-	SELECT user_login, users.oid, description, tags
+	SELECT DISTINCT user_login, users.oid, description
 	FROM users
 	LEFT JOIN u_t ON users.oid=u_id
 	LEFT JOIN tags ON tags.oid=t_id
