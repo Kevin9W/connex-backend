@@ -49,10 +49,28 @@ function register(request,response){
             });
           }
           else{
-            return response.status(200).json({
-              status: 200,
-              message: "Successfully Registered!"
-            });
+            let user = {
+              user_login: request.body.user_login
+            }
+            jwt.sign(
+              user,
+              "Bawooga Whales",
+              {
+                expiresIn: "12h"
+              },
+              (err, signedJwt) => {
+                return response.status(200).json({
+                  status: 200,
+                  message: "Successfully registerd and logged in!",
+                  user_login: request.body.user_login,
+                  signedJwt
+                })
+              }
+            )
+            // return response.status(200).json({
+            //   status: 200,
+            //   message: "Successfully Registered!"
+            // });
           }
         })
       })
@@ -92,7 +110,7 @@ function login(request,response){
           }
         })
         let user = {
-          username: foundUser.user_login
+          user_login: foundUser.user_login
         }
         jwt.sign(
           user,
@@ -103,8 +121,8 @@ function login(request,response){
           (err, signedJwt) => {
             return response.status(200).json({
               status: 200,
-              message: "Successfully logged in",
-              username: foundUser.user_login,
+              message: "Successfully logged in!",
+              user_login: foundUser.user_login,
               signedJwt
             })
           }
@@ -119,9 +137,57 @@ function login(request,response){
     })
   })
 }
-//---Forgot Password---
+//---Get One User Info---
+function getUserInfo(request,response){
+  let name=request.params.user
+  if (!name){
+    return response.status(400).json({
+      status: 400,
+      message: "Bad Request!"
+    })
+  }
+  model.getUserInfo(name,(error,data)=>{
+    if(error){
+      console.log(error)
+      return response.status(500).json({
+        status: 500,
+        message: "Something went wrong!"
+      })
+    }
+    return response.status(200).json({
+      status: 200,
+      message: "Success!",
+      data:data,
+    })
+  })
+}
+function updateUserInfo(request,response){
+  let name = request.params.user
+  let userData= [request.body.description, name]
+  let tagsData=[request.body.tags]
+  if (!name) {
+    return response.status(400).json({
+      status: 400,
+      message: "Bad Request!"
+    })
+  }
+  model.updateUserInfo(userData, (error) => {
+    if (error) {
+      return response.status(500).json({
+        status: 500,
+        message: "Something went wrong!"
+      })
+    }
+    return response.status(200).json({
+      status: 200,
+      message: "Success!",
+    })
+  })
+}
 
 module.exports={
   register,
   login,
+  getUserInfo,
+  updateUserInfo,
 }

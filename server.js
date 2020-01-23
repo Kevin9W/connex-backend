@@ -12,14 +12,14 @@ app.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
 	next();
 });
-
-app.get('/api', (request, response)=>{
-	response.status(200).send("I'm the back end!")
-})
-
-app.post('/register',users.auth.register)
+//---AUTH---
+app.post('/register', users.auth.register)
 app.post('/login', users.auth.login)
+app.get('/profile/:user',users.auth.getUserInfo)
+app.post('/profile/:user', users.auth.updateUserInfo)
 
+//---PUBLIC---
+app.get('/users/:identifier', users.public.getMatch)
 
 app.listen(PORT,()=>{
 	console.log(`App listening on Port:${PORT} \nAccess at http://localhost:${PORT}`)

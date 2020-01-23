@@ -15,6 +15,24 @@ function getLogin(info,callback){
 	WHERE user_login=?`
 	database.get(getLoginQuery,info,callback)
 }
+function getUserInfo(name,callback){
+	let getUserInfoQuery=`
+	SELECT user_login, users.rowid AS 'id', email, date_registered, description, tags, public
+	FROM users
+	LEFT JOIN u_t ON users.oid = u_id
+	LEFT JOIN tags ON tags.oid = t_id
+	WHERE user_login=?`
+	database.get(getUserInfoQuery, name, callback)
+}
+function getMatchUsers(info, callback){
+	let getMatchUsersQuery=`
+	SELECT user_login, users.oid, description, tags
+	FROM users
+	LEFT JOIN u_t ON users.oid=u_id
+	LEFT JOIN tags ON tags.oid=t_id
+	WHERE (user_login LIKE '%`+info+`%' OR tags LIKE '%`+info+`%') AND public=1`
+	database.all(getMatchUsersQuery, callback)
+}
 //---Update Login Date---
 function updateLoginDate(info,callback){
 	info.unshift(Date())
@@ -23,6 +41,17 @@ function updateLoginDate(info,callback){
 	SET last_login=?
 	WHERE user_login =?`
 	database.run(updateLoginDateQuery, info, callback)
+}
+function updateUserInfo(data,callback){
+	let updateUsersInfoQuery=`
+	UPDATE users
+	SET description= ?
+	WHERE user_login= ?`
+	database.run(updateUsersInfoQuery,data,callback)
+}
+function updateTagsInfo(data,callback) {
+	let updateTagsInfo=`
+	INSERT INTO tags VALUES (?)`
 }
 //---Register New User---
 function getOneLogin_Email(info,callback){
@@ -38,5 +67,7 @@ function newReg(info,callback){
 	database.run(newRegQuery,info,callback)
 }
 module.exports={
-	getAll,getOneLogin_Email,newReg,getLogin,updateLoginDate
+	getAll,getOneLogin_Email,newReg,getLogin,
+	updateLoginDate,getMatchUsers,getUserInfo,
+	updateUserInfo, updateTagsInfo
 }
