@@ -146,7 +146,7 @@ function getUserInfo(request,response){
       message: "Bad Request!"
     })
   }
-  model.getUserInfo(name,(error,data)=>{
+  model.getUserInfo(name,(error,userData)=>{
     if(error){
       console.log(error)
       return response.status(500).json({
@@ -154,17 +154,32 @@ function getUserInfo(request,response){
         message: "Something went wrong!"
       })
     }
-    return response.status(200).json({
-      status: 200,
-      message: "Success!",
-      data:data,
+    
+    model.getUserTags(name,(error,tagsData)=>{
+      if (error) {
+        console.log(error)
+        return response.status(500).json({
+          status: 500,
+          message: "Something went wrong!"
+        })
+      }
+      let tagsSend=[]
+      for (let tag of tagsData){
+        tagsSend.push(tag.tags)
+      }
+      userData.tags = tagsSend
+      return response.status(200).json({
+        status: 200,
+        message: "Success!",
+        data: userData,
+      })
     })
   })
 }
 function updateUserInfo(request,response){
   let name = request.params.user
-  let userData= [request.body.description, name]
-  let tagsData=[request.body.tags]
+  let userData = [request.body.description, request.body.public, name]
+  let tagsData=request.body.tags
   if (!name) {
     return response.status(400).json({
       status: 400,
@@ -178,9 +193,58 @@ function updateUserInfo(request,response){
         message: "Something went wrong!"
       })
     }
+    for(let tag of tagsData){
+      let u_tInfo=[request.body.id]
+      model.getTagsOid([tag],(error,id)=>{
+        if (error) {
+          return response.status(500).json({
+            status: 500,
+            message: "Something went wrong!"
+          })
+        }
+        if(id){
+          u_tInfo.push(id.rowid)
+          model.update_u_t(u_tInfo,(error)=>{
+            if (error) {
+              return response.status(500).json({
+                status: 500,
+                message: "Something went wrong!"
+              })
+            }
+          })
+        }
+        else{
+          model.createTags([tag],(error)=>{
+            if (error) {
+              return response.status(500).json({
+                status: 500,
+                message: "Something went wrong!"
+              })
+            }
+            model.getTagsOid([tag], (error, id) => {
+              if (error) {
+                return response.status(500).json({
+                  status: 500,
+                  message: "Something went wrong!"
+                })
+              }
+              u_tInfo.push(id.rowid)
+              model.update_u_t(u_tInfo, (error) => {
+                if (error) {
+                  return response.status(500).json({
+                    status: 500,
+                    message: "Something went wrong!"
+                  })
+                }
+              })
+            })
+          })
+        }
+      })
+    }
     return response.status(200).json({
       status: 200,
-      message: "Success!",
+      message: "Success!"
     })
   })
 }

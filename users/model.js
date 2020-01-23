@@ -17,12 +17,19 @@ function getLogin(info,callback){
 }
 function getUserInfo(name,callback){
 	let getUserInfoQuery=`
-	SELECT user_login, users.rowid AS 'id', email, date_registered, description, tags, public
+	SELECT user_login, users.rowid AS 'id', email, date_registered, description, public
 	FROM users
-	LEFT JOIN u_t ON users.oid = u_id
-	LEFT JOIN tags ON tags.oid = t_id
 	WHERE user_login=?`
 	database.get(getUserInfoQuery, name, callback)
+}
+function getUserTags(name, callback) {
+	let getUserTagsQuery = `
+	SELECT tags
+	FROM tags
+	JOIN u_t ON tags.oid = t_id
+	JOIN users ON users.oid = u_id
+	WHERE user_login=?`
+	database.all(getUserTagsQuery, name, callback)
 }
 function getMatchUsers(info, callback){
 	let getMatchUsersQuery=`
@@ -30,8 +37,8 @@ function getMatchUsers(info, callback){
 	FROM users
 	LEFT JOIN u_t ON users.oid=u_id
 	LEFT JOIN tags ON tags.oid=t_id
-	WHERE (user_login LIKE '%`+info+`%' OR tags LIKE '%`+info+`%') AND public=1`
-	database.all(getMatchUsersQuery, callback)
+	WHERE (user_login LIKE ? OR tags LIKE ?) AND public=1`
+	database.all(getMatchUsersQuery, [`%${info}%`, `%${info}%`], callback)
 }
 //---Update Login Date---
 function updateLoginDate(info,callback){
@@ -45,13 +52,26 @@ function updateLoginDate(info,callback){
 function updateUserInfo(data,callback){
 	let updateUsersInfoQuery=`
 	UPDATE users
-	SET description= ?
-	WHERE user_login= ?`
+	SET description=?, public=? 
+	WHERE user_login=?`
 	database.run(updateUsersInfoQuery,data,callback)
 }
-function updateTagsInfo(data,callback) {
-	let updateTagsInfo=`
+function getTagsOid(data,callback){
+	let getTagsOidQuery=`
+	SELECT tags.rowid
+	FROM tags
+	WHERE tags=?`
+	database.get(getTagsOidQuery,data,callback)
+}
+function createTags(data,callback) {
+	let createTagsQuery=`
 	INSERT INTO tags VALUES (?)`
+	database.run(createTagsQuery, data,callback)
+}
+function update_u_t(data,callback){
+	let update_u_t_Query=`
+	INSERT INTO u_t VALUES(?,?)`
+	database.run(update_u_t_Query,data,callback)
 }
 //---Register New User---
 function getOneLogin_Email(info,callback){
@@ -69,5 +89,6 @@ function newReg(info,callback){
 module.exports={
 	getAll,getOneLogin_Email,newReg,getLogin,
 	updateLoginDate,getMatchUsers,getUserInfo,
-	updateUserInfo, updateTagsInfo
+	updateUserInfo, createTags, getTagsOid, 
+	update_u_t, getUserTags
 }

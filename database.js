@@ -13,7 +13,7 @@ const createSTTableQuery='CREATE TABLE IF NOT EXISTS social_types (type TEXT UNI
 
 const create_u_c_TableQuery='CREATE TABLE IF NOT EXISTS u_c (u_id INTEGER, c_id INTEGER)'
 
-const create_u_t_TableQuery='CREATE TABLE IF NOT EXISTS u_t (u_id INTEGER, t_id INTEGER)'
+const create_u_t_TableQuery='CREATE TABLE IF NOT EXISTS u_t (u_id INTEGER, t_id INTEGER, UNIQUE(u_id, t_id))'
 
 const create_c_sa_TableQuery='CREATE TABLE IF NOT EXISTS c_sa (c_id INTEGER, sa_id INTEGER)'
 
