@@ -68,6 +68,12 @@ function createTags(data,callback) {
 	INSERT INTO tags VALUES (?)`
 	database.run(createTagsQuery, data,callback)
 }
+function delete_u_t_entries(id,callback){
+	let delete_u_t_entriesQuery=`
+	DELETE FROM u_t
+	WHERE u_id=?`
+	database.run(delete_u_t_entriesQuery,id,callback)
+}
 function update_u_t(data,callback){
 	let update_u_t_Query=`
 	INSERT INTO u_t VALUES(?,?)`
@@ -90,5 +96,5 @@ module.exports={
 	getAll,getOneLogin_Email,newReg,getLogin,
 	updateLoginDate,getMatchUsers,getUserInfo,
 	updateUserInfo, createTags, getTagsOid, 
-	update_u_t, getUserTags
+	update_u_t, getUserTags, delete_u_t_entries
 }
